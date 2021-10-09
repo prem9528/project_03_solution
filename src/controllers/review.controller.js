@@ -1,19 +1,40 @@
 const moment = require('moment')
+const mongoose = require('mongoose')
 
 const {BookModel, ReviewModel, UserModel} = require('../models')
-const {validator} = require('../utils')
+// const {validator} = require('../utils')
 
+
+const isValidRequestBody = function(requestBody) {
+    return Object.keys(requestBody).length > 0
+}
+
+const isValidObjectId = function(objectId) {
+    return mongoose.Types.ObjectId.isValid(objectId)
+}
+
+const isValidDate = function(value) {
+    const validFormats = [
+        "DD/MM/YYYY",
+        "MM/DD/YYYY",
+        "YYYY/MM/DD",
+        "DD-MM-YYYY",
+        "MM-DD-YYYY",
+        "YYYY-MM-DD"
+    ]
+    return moment(value, validFormats, true).isValid()
+}
 const addReview = async function (req, res) {
     try {
         const requestBody = req.body
         const params = req.params
         const bookId = params.bookId
 
-        if (!validator.isValidRequestBody(requestBody)) {
+        if (!isValidRequestBody(requestBody)) {
             return res.status(400).send({ status: false, message: 'Invalid params received in request body' })
         }
 
-        if(!validator.isValidObjectId(bookId)) {
+        if(!isValidObjectId(bookId)) {
             return res.status(400).send({ status: false, message: `${bookId} is an invalid book id` })
         }
 
@@ -23,19 +44,19 @@ const addReview = async function (req, res) {
 
         const { review, rating, reviewedBy, reviewedAt } = requestBody;
         
-        if(!validator.isValid(rating)) {
+        if(!isValid(rating)) {
             return res.status(400).send({ status: false, message: 'Rating is required' })
         }
         
-        if (!validator.isValidNumber(rating) || !validator.isInValidRange(rating, 1, 5)) {
+        if (!isValidNumber(rating) || !validator.isInValidRange(rating, 1, 5)) {
             return res.status(400).send({ status: false, message: 'Rating should be a valid number between 1 to 5' })
         }
 
-        if(!validator.isValid(reviewedAt)) {
+        if(!isValid(reviewedAt)) {
             return res.status(400).send({ status: false, message: `Review date is required`})
         }
 
-        if(!validator.isValidDate(reviewedAt)) {
+        if(!isValidDate(reviewedAt)) {
             return res.status(400).send({ status: false, message: `${reviewedAt} is an invalid date`})
         }
 
@@ -67,7 +88,7 @@ const updateReview = async function (req, res) {
         const reviewId = params.reviewId
 
         // Validation stats
-        if (!validator.isValidObjectId(bookId)) {
+        if (!isValidObjectId(bookId)) {
             return res.status(400).send({ status: false, message: `${bookId} is not a valid book id` })
         }
 
@@ -77,7 +98,7 @@ const updateReview = async function (req, res) {
             return res.status(404).send({ status: false, message: `Book not found` })
         }
 
-        if (!validator.isValidObjectId(reviewId)) {
+        if (!isValidObjectId(reviewId)) {
             return res.status(400).send({ status: false, message: `${reviewId} is not a valid review id` })
         }
 
@@ -88,7 +109,7 @@ const updateReview = async function (req, res) {
         const data = book.toObject()
         data['reviewsData'] = reviewExist
 
-        if (!validator.isValidRequestBody(requestBody)) {
+        if (!isValidRequestBody(requestBody)) {
             return res.status(400).send({ status: false, message: 'No paramateres passed. Review unmodified', data: data })
         }
 
@@ -97,7 +118,7 @@ const updateReview = async function (req, res) {
         
         const updatedReviewData = {}
 
-        if (validator.isValid(rating)) {
+        if (isValid(rating)) {
             if(validator.isValidNumber(rating) && validator.isInValidRange(rating, 1, 5)) {
                 if (!Object.prototype.hasOwnProperty.call(updatedReviewData, '$set'))
                     updatedReviewData[ '$set' ] = {}
@@ -108,21 +129,21 @@ const updateReview = async function (req, res) {
             }
         }
 
-        if(validator.isValid(reviewedAt) && validator.isValidDate(reviewedAt)) {
+        if(isValid(reviewedAt) && validator.isValidDate(reviewedAt)) {
             if (!Object.prototype.hasOwnProperty.call(updatedReviewData, '$set'))
                 updatedReviewData[ '$set' ] = {}
 
             updatedReviewData[ '$set' ][ 'reviewedAt' ] = moment(reviewedAt).toISOString()
         }
 
-        if (validator.isValid(review)) {
+        if (isValid(review)) {
             if (!Object.prototype.hasOwnProperty.call(updatedReviewData, '$set'))
                 updatedReviewData[ '$set' ] = {}
 
             updatedReviewData[ '$set' ][ 'review' ] = review
         }
 
-        if (validator.isValid(reviewedBy)) {
+        if (isValid(reviewedBy)) {
             if (!Object.prototype.hasOwnProperty.call(updatedReviewData, '$set'))
                 updatedReviewData[ '$set' ] = {}
 
@@ -145,11 +166,11 @@ const deleteReview = async function (req, res) {
         const bookId = params.bookId
         const reviewId = params.reviewId
 
-        if (!validator.isValidObjectId(bookId)) {
+        if (!isValidObjectId(bookId)) {
             return res.status(400).send({ status: false, message: `${bookId} is not a valid book id` })
         }
 
-        if (!validator.isValidObjectId(reviewId)) {
+        if (!isValidObjectId(reviewId)) {
             res.status(400).send({ status: false, message: `${reviewId} is not a valid review id` })
         }
 

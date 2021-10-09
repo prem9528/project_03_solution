@@ -1,19 +1,47 @@
 const moment = require('moment')
+const mongoose = require('mongoose')
 
 const {BookModel, ReviewModel, UserModel} = require('../models')
-const {validator} = require('../utils')
+
+const isValid = function(value) {
+    if(typeof value === 'undefined' || value === null) return false
+    if(typeof value === 'string' && value.trim().length === 0) return false
+    if(typeof value === 'number' && value.toString().trim().length === 0) return false
+    return true;
+}
+
+
+const isValidRequestBody = function(requestBody) {
+    return Object.keys(requestBody).length > 0
+}
+
+const isValidObjectId = function(objectId) {
+    return mongoose.Types.ObjectId.isValid(objectId)
+}
+
+const isValidDate = function(value) {
+    const validFormats = [
+        "DD/MM/YYYY",
+        "MM/DD/YYYY",
+        "YYYY/MM/DD",
+        "DD-MM-YYYY",
+        "MM-DD-YYYY",
+        "YYYY-MM-DD"
+    ]
+    return moment(value, validFormats, true).isValid()
+}
 
 const createBook = async function (req, res) {
     try {
         const requestBody = req.body;
 
-        if (!validator.isValidRequestBody(requestBody)) {
+        if (!isValidRequestBody(requestBody)) {
             return res.status(400).send({ status: false, message: 'Invalid params received in request body' })
         }
 
         const { title, excerpt, userId, ISBN, category, subcategory, releasedAt} = requestBody;
 
-        if (!validator.isValid(title)) {
+        if (!isValid(title)) {
             return res.status(400).send({ status: false, message: 'Title is required' })
         }
 
@@ -23,15 +51,15 @@ const createBook = async function (req, res) {
             return res.status(400).send({ status: false, message: 'Title is already used.' })
         }
 
-        if (!validator.isValid(excerpt)) {
+        if (!isValid(excerpt)) {
             return res.status(400).send({ status: false, message: 'Excerpt is required' })
         }
 
-        if(!validator.isValid(userId)) {
+        if(!isValid(userId)) {
             return res.status(400).send({ status: false, message: 'User id is required' })
         }
 
-        if(!validator.isValidObjectId(userId)) {
+        if(!isValidObjectId(userId)) {
             return res.status(400).send({ status: false, message: `${userId} is an invalid userid` })
         }
 
@@ -39,7 +67,7 @@ const createBook = async function (req, res) {
 
         if (!isUserIdExist) return res.status(400).send({ status: false, message: `${userId} does not exist` })
 
-        if (!validator.isValid(ISBN)) {
+        if (!isValid(ISBN)) {
             return res.status(400).send({ status: false, message: 'ISBN is required' })
         }
 
@@ -49,19 +77,19 @@ const createBook = async function (req, res) {
             return res.status(400).send({ status: false, message: `${ISBN} ISBN  is already in use.` });
         }
 
-        if (!validator.isValid(category)) {
+        if (!isValid(category)) {
             return res.status(400).send({ status: false, message: 'Category is required' })
         }
 
-        if (!validator.isValid(subcategory)) {
+        if (!isValid(subcategory)) {
             return res.status(400).send({ status: false, message: 'Subcategory is required' })
         }
 
-        if(!validator.isValid(releasedAt)) {
+        if(!isValid(releasedAt)) {
             return res.status(400).send({ status: false, message: `Release date is required`})
         }
 
-        if(!validator.isValidDate(releasedAt)) {
+        if(!isValidDate(releasedAt)) {
             return res.status(400).send({ status: false, message: `${releasedAt} is an invalid date`})
         }
 
@@ -80,18 +108,18 @@ const getAllBooks = async function (req, res) {
         const filterQuery = { isDeleted: false }
         const queryParams = req.query;
 
-        if (validator.isValidRequestBody(queryParams)) {
+        if (isValidRequestBody(queryParams)) {
             const { userId, category, subcategory } = queryParams;
 
-            if (validator.isValid(userId) && validator.isValidObjectId(userId)) {
+            if (isValid(userId) && isValidObjectId(userId)) {
                 filterQuery[ 'userId' ] = userId
             }
 
-            if (validator.isValid(category)) {
+            if (isValid(category)) {
                 filterQuery[ 'category' ] = category.trim()
             }
 
-            if (validator.isValid(subcategory)) {
+            if (isValid(subcategory)) {
                 filterQuery[ 'subCategory' ] = subcategory.trim()
             }
         }
@@ -112,7 +140,7 @@ const getBookDetails = async function (req, res) {
     try {
         const bookId = req.params.bookId
 
-        if (!validator.isValidObjectId(bookId)) {
+        if (!isValidObjectId(bookId)) {
             return res.status(400).send({ status: false, message: `${bookId} is not a valid book id` })
         }
 
@@ -141,11 +169,11 @@ const updateBook = async function (req, res) {
         const userId = req.userId
 
         // Validation stats
-        if (!validator.isValidObjectId(bookId)) {
+        if (!isValidObjectId(bookId)) {
             return res.status(400).send({ status: false, message: `${bookId} is not a valid book id` })
         }
 
-        if (!validator.isValidObjectId(userId)) {
+        if (!isValidObjectId(userId)) {
             return res.status(400).send({ status: false, message: `${userId} is not a valid user id` })
         }
 
@@ -160,7 +188,7 @@ const updateBook = async function (req, res) {
             return
         }
 
-        if (!validator.isValidRequestBody(requestBody)) {
+        if (!isValidRequestBody(requestBody)) {
             return res.status(400).send({ status: false, message: 'No paramateres passed. Book unmodified', data: book })
         }
 
@@ -169,7 +197,7 @@ const updateBook = async function (req, res) {
 
         const updatedBookData = {}
 
-        if (validator.isValid(title)) {
+        if (isValid(title)) {
             const isTitleAlreadyUsed = await BookModel.findOne({ title, _id: { $ne: bookId} });
 
             if (isTitleAlreadyUsed) {
@@ -182,13 +210,13 @@ const updateBook = async function (req, res) {
             updatedBookData[ '$set' ][ 'title' ] = title
         }
 
-        if (validator.isValid(excerpt)) {
+        if (isValid(excerpt)) {
             if (!Object.prototype.hasOwnProperty.call(updatedBookData, '$set'))
                 updatedBookData[ '$set' ] = {}
             updatedBookData[ '$set' ][ 'excerpt' ] = excerpt
         }
 
-        if (validator.isValid(ISBN)) {
+        if (isValid(ISBN)) {
             const isISBNAlreadyUsed = await BookModel.findOne({ ISBN, _id: { $ne: bookId }});
     
             if (isISBNAlreadyUsed) {
@@ -200,7 +228,7 @@ const updateBook = async function (req, res) {
             updatedBookData[ '$set' ][ 'ISBN' ] = ISBN
         }
 
-        if (validator.isValidDate(releasedAt)) {
+        if (isValidDate(releasedAt)) {
             if (!Object.prototype.hasOwnProperty.call(updatedBookData, '$set'))
                 updatedBookData[ '$set' ] = {}
             
@@ -221,11 +249,11 @@ const deleteBook = async function (req, res) {
         const bookId = params.bookId
         const userId = req.userId;
 
-        if (!validator.isValidObjectId(bookId)) {
+        if (!isValidObjectId(bookId)) {
             return res.status(400).send({ status: false, message: `${bookId} is not a valid book id` })
         }
 
-        if (!validator.isValidObjectId(userId)) {
+        if (!isValidObjectId(userId)) {
             return res.status(400).send({ status: false, message: `${userId} is not a valid user id` })
         }
 
