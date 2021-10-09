@@ -2,28 +2,25 @@ const moment = require('moment')
 const mongoose = require('mongoose')
 
 const {BookModel, ReviewModel, UserModel} = require('../models')
-// const {validator} = require('../utils')
 
+const dateRegex = /^(([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29)$/;
+const reNumber = /\d+/
 
 const isValidRequestBody = function(requestBody) {
     return Object.keys(requestBody).length > 0
+}
+
+const isValid = function(value) {
+    if(typeof value === 'undefined' || value === null) return false
+    if(typeof value === 'string' && value.trim().length === 0) return false
+    if(typeof value === 'number' && value.toString().trim().length === 0) return false
+    return true;
 }
 
 const isValidObjectId = function(objectId) {
     return mongoose.Types.ObjectId.isValid(objectId)
 }
 
-const isValidDate = function(value) {
-    const validFormats = [
-        "DD/MM/YYYY",
-        "MM/DD/YYYY",
-        "YYYY/MM/DD",
-        "DD-MM-YYYY",
-        "MM-DD-YYYY",
-        "YYYY-MM-DD"
-    ]
-    return moment(value, validFormats, true).isValid()
-}
 const addReview = async function (req, res) {
     try {
         const requestBody = req.body
@@ -48,16 +45,23 @@ const addReview = async function (req, res) {
             return res.status(400).send({ status: false, message: 'Rating is required' })
         }
         
-        if (!isValidNumber(rating) || !validator.isInValidRange(rating, 1, 5)) {
-            return res.status(400).send({ status: false, message: 'Rating should be a valid number between 1 to 5' })
+        if (!(!isNaN(Number(rating)) && reNumber.test(rating))) {
+            return res.status(400).send({ status: false, message: 'Rating should be a valid number' })
+        }
+
+        if(rating<1) {
+            return res.status(400).send({status: false, message: `Rating must be between 1 to 5`})
+        }
+        if(rating>5) {
+            return res.status(400).send({status: false, message: `Rating must be between 1 to 5`})
         }
 
         if(!isValid(reviewedAt)) {
             return res.status(400).send({ status: false, message: `Review date is required`})
         }
 
-        if(!isValidDate(reviewedAt)) {
-            return res.status(400).send({ status: false, message: `${reviewedAt} is an invalid date`})
+        if(!dateRegex.test(reviewedAt)) {
+            return res.status(400).send({ status: false, message: `Review date must be "YYYY-MM-DD" in this form only And a "Valid Date"`})
         }
 
         const newReview = await ReviewModel.create({
@@ -65,7 +69,7 @@ const addReview = async function (req, res) {
             rating,
             review,
             reviewedBy,
-            reviewedAt: moment(reviewedAt).toISOString()
+            reviewedAt
         });
 
         book.reviews = book.reviews + 1
@@ -119,21 +123,32 @@ const updateReview = async function (req, res) {
         const updatedReviewData = {}
 
         if (isValid(rating)) {
-            if(validator.isValidNumber(rating) && validator.isInValidRange(rating, 1, 5)) {
+            if (!(!isNaN(Number(rating)) && reNumber.test(rating))) {
+                return res.status(400).send({ status: false, message: 'Rating should be a valid number' })
+            }
+    
+            if(rating<1) {
+                return res.status(400).send({status: false, message: `Rating must be between 1 to 5`})
+            }
+            if(rating>5) {
+                return res.status(400).send({status: false, message: `Rating must be between 1 to 5`})
+            }
+
                 if (!Object.prototype.hasOwnProperty.call(updatedReviewData, '$set'))
                     updatedReviewData[ '$set' ] = {}
     
                 updatedReviewData[ '$set' ][ 'rating' ] = rating
-            } else {
-                return res.status(400).send({status: false, message: 'Rating should be a valid number between 1 to 5'})
-            }
         }
 
-        if(isValid(reviewedAt) && validator.isValidDate(reviewedAt)) {
+        if(isValid(reviewedAt)) {
+
+            if(!dateRegex.test(reviewedAt)) {
+                return res.status(400).send({ status: false, message: `Review date must be "YYYY-MM-DD" in this form only And a "Valid Date"`})
+            }
+
             if (!Object.prototype.hasOwnProperty.call(updatedReviewData, '$set'))
                 updatedReviewData[ '$set' ] = {}
-
-            updatedReviewData[ '$set' ][ 'reviewedAt' ] = moment(reviewedAt).toISOString()
+            updatedReviewData[ '$set' ][ 'reviewedAt' ] = reviewedAt;
         }
 
         if (isValid(review)) {

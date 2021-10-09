@@ -3,6 +3,8 @@ const mongoose = require('mongoose')
 
 const {BookModel, ReviewModel, UserModel} = require('../models')
 
+const dateRegex = /^(([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29)$/;
+
 const isValid = function(value) {
     if(typeof value === 'undefined' || value === null) return false
     if(typeof value === 'string' && value.trim().length === 0) return false
@@ -10,25 +12,12 @@ const isValid = function(value) {
     return true;
 }
 
-
 const isValidRequestBody = function(requestBody) {
     return Object.keys(requestBody).length > 0
 }
 
 const isValidObjectId = function(objectId) {
     return mongoose.Types.ObjectId.isValid(objectId)
-}
-
-const isValidDate = function(value) {
-    const validFormats = [
-        "DD/MM/YYYY",
-        "MM/DD/YYYY",
-        "YYYY/MM/DD",
-        "DD-MM-YYYY",
-        "MM-DD-YYYY",
-        "YYYY-MM-DD"
-    ]
-    return moment(value, validFormats, true).isValid()
 }
 
 const createBook = async function (req, res) {
@@ -89,12 +78,12 @@ const createBook = async function (req, res) {
             return res.status(400).send({ status: false, message: `Release date is required`})
         }
 
-        if(!isValidDate(releasedAt)) {
-            return res.status(400).send({ status: false, message: `${releasedAt} is an invalid date`})
+        if(!dateRegex.test(releasedAt)) {
+            return res.status(400).send({ status: false, message: `Releasing date must be "YYYY-MM-DD" in this form only And a "Valid Date"`})
         }
 
         const newBook = await BookModel.create({
-            title, excerpt, userId, ISBN, category, subcategory, releasedAt: moment(releasedAt).toISOString()
+            title, excerpt, userId, ISBN, category, subcategory, releasedAt
         });
 
         return res.status(201).send({ status: true, message: `Books created successfully`, data: newBook });
@@ -228,11 +217,15 @@ const updateBook = async function (req, res) {
             updatedBookData[ '$set' ][ 'ISBN' ] = ISBN
         }
 
-        if (isValidDate(releasedAt)) {
+        if (isValid(releasedAt)) {
+
+            if(!dateRegex.test(releasedAt)) {
+                return res.status(400).send({ status: false, message: `Releasing date must be "YYYY-MM-DD" in this form only And a "Valid Date"`})
+            }
+            
             if (!Object.prototype.hasOwnProperty.call(updatedBookData, '$set'))
                 updatedBookData[ '$set' ] = {}
-            
-            updatedBookData[ '$set' ][ 'releasedAt' ] = moment(releasedAt).toISOString()
+            updatedBookData[ '$set' ][ 'releasedAt' ] = releasedAt;
         }
 
         const updatedBook = await BookModel.findOneAndUpdate({ _id: bookId }, updatedBookData, { new: true })

@@ -1,4 +1,4 @@
 module.exports = {
-    validator: require('./validator'),
+    // validator: require('./validator'),
     jwt: require('./jwt')
 }
