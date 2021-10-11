@@ -1,4 +1,5 @@
 // const jwt = require('../jsonwebtoken/jwt')
+const jwt = require("jsonwebtoken")
 const UserModel = require('../models/userModel')
 
 
@@ -126,7 +127,7 @@ const login = async function (req, res) {
         const token = await jwt.sign({
             userId: user._id,
             iat: Math.floor(Date.now() / 1000),
-            exp: Math.floor(Date.now() / 1000) + 10 * 60 * 60
+            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 60
         }, 'someverysecuredprivatekey291@(*#*(@(@()')
 
         return res.status(200).send({status: true, message: `User login successfull`, data: {token}});

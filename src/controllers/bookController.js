@@ -90,7 +90,7 @@ const createBook = async function (req, res) {
 
         return res.status(201).send({ status: true, message: `Books created successfully`, data: newBook });
     } catch (error) {
-        return res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message , msg:"server" });
     }
 }
 
