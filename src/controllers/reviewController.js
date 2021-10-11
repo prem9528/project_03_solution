@@ -63,7 +63,7 @@ const addReview = async function (req, res) {
             rating,
             review,
             reviewedBy,
-            reviewedAt: Date.now()
+            reviewedAt: new Date()
         });
 
         book.reviews = book.reviews + 1
@@ -72,7 +72,7 @@ const addReview = async function (req, res) {
         const data = book.toObject()
         data['reviewsData'] = newReview
 
-        return res.status(201).send({ status: true, message: `Reviewd added successfully`, data: data });
+        return res.status(201).send({ status: true, message: `Review added successfully`, data: data });
     } catch (error) {
         return res.status(500).json({ success: false, error: error.message });
     }
@@ -112,7 +112,7 @@ const updateReview = async function (req, res) {
         }
 
         // Extract params
-        const { review, rating, reviewedBy, reviewedAt } = requestBody;
+        const { review, rating, reviewedBy} = requestBody;
         
         const updatedReviewData = {}
 
@@ -132,17 +132,6 @@ const updateReview = async function (req, res) {
                     updatedReviewData[ '$set' ] = {}
     
                 updatedReviewData[ '$set' ][ 'rating' ] = rating
-        }
-
-        if(isValid(reviewedAt)) {
-
-            if(!dateRegex.test(reviewedAt)) {
-                return res.status(400).send({ status: false, message: `Review date must be "YYYY-MM-DD" in this form only And a "Valid Date"`})
-            }
-
-            if (!Object.prototype.hasOwnProperty.call(updatedReviewData, '$set'))
-                updatedReviewData[ '$set' ] = {}
-            updatedReviewData[ '$set' ][ 'reviewedAt' ] = reviewedAt;
         }
 
         if (isValid(review)) {
