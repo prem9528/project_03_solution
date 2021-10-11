@@ -23,6 +23,9 @@ const authMiddleware =  (req, res, next) => {
 
         next()
     } catch (error) {
+        if(error.name){
+            res.status(400).send({status: false, message: "jwt expired"})
+        }
         console.error(`Error0000! ${error.message}`)
         res.status(500).send({status: false, message: error.message})
     }
