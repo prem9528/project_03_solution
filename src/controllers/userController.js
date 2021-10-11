@@ -1,6 +1,5 @@
-const jwt = require('../utils/jwt')
-const {systemConfig} = require('../configs')
-const {UserModel} = require('../models')
+// const jwt = require('../jsonwebtoken/jwt')
+const UserModel = require('../models/userModel')
 
 
 const re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
@@ -35,8 +34,8 @@ const register = async function (req, res) {
             return res.status(400).send({status: false, message: 'Title is required'})
         }
         
-        if(!(systemConfig.titleEnumArray.indexOf(title) !== -1)) {
-            return res.status(400).send({status: false, message: `Title should be among ${systemConfig.titleEnumArray.join(', ')}`})
+        if((['Mr', 'Mrs', 'Miss', 'Mast'].indexOf(title) === -1)) {
+            return res.status(400).send({status: false, message: `Title should be among ${['Mr', 'Mrs', 'Miss', 'Mast'].join(', ')}`})
         }
 
         if(!isValid(name)) {
@@ -123,7 +122,12 @@ const login = async function (req, res) {
             return res.status(401).send({status: false, message: `Invalid login credentials`});
         }
 
-        const token = await jwt.createToken({userId: user._id});
+        // const token = await jwt.createToken({userId: user._id});
+        const token = await jwt.sign({
+            userId: user._id,
+            iat: Math.floor(Date.now() / 1000),
+            exp: Math.floor(Date.now() / 1000) + 10 * 60 * 60
+        }, 'someverysecuredprivatekey291@(*#*(@(@()')
 
         return res.status(200).send({status: true, message: `User login successfull`, data: {token}});
     } catch (error) {
