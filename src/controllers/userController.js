@@ -35,8 +35,8 @@ const register = async function (req, res) {
             return res.status(400).send({status: false, message: 'Title is required'})
         }
         
-        if((['Mr', 'Mrs', 'Miss', 'Mast'].indexOf(title) === -1)) {
-            return res.status(400).send({status: false, message: `Title should be among ${['Mr', 'Mrs', 'Miss', 'Mast'].join(', ')}`})
+        if((['Mr', 'Mrs', 'Miss'].indexOf(title) === -1)) {
+            return res.status(400).send({status: false, message: `Title should be among ${['Mr', 'Mrs', 'Miss'].join(', ')}`})
         }
 
         if(!isValid(name)) {

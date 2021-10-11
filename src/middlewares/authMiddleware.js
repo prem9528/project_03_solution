@@ -11,7 +11,6 @@ const authMiddleware =  (req, res, next) => {
         }
 
         const decoded =  jwt.verify(token, 'someverysecuredprivatekey291@(*#*(@(@()');
-      console.log("decode", decoded)
 
         if(!decoded) {
             res.status(403).send({status: false, message: `Invalid authentication token in request`})
@@ -19,13 +18,9 @@ const authMiddleware =  (req, res, next) => {
         }
 
         req.userId = decoded.userId
-        console.log("3i9r9r9",req.userId)
 
         next()
     } catch (error) {
-        if(error.name){
-            res.status(400).send({status: false, message: "jwt expired"})
-        }
         console.error(`Error0000! ${error.message}`)
         res.status(500).send({status: false, message: error.message})
     }

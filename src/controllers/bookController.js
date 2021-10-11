@@ -111,7 +111,7 @@ const getAllBooks = async function (req, res) {
             }
 
             if (isValid(subcategory)) {
-                filterQuery[ 'subCategory' ] = subcategory.trim()
+                filterQuery[ 'subcategory' ] = subcategory.trim()
             }
         }
 

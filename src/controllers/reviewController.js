@@ -41,7 +41,7 @@ const addReview = async function (req, res) {
 
         if(!book) return res.status(404).send({status: false, message: `Book does not exist`})
 
-        const { review, rating, reviewedBy, reviewedAt } = requestBody;
+        const { review, rating, reviewedBy} = requestBody;
         
         if(!isValid(rating)) {
             return res.status(400).send({ status: false, message: 'Rating is required' })
@@ -58,20 +58,12 @@ const addReview = async function (req, res) {
             return res.status(400).send({status: false, message: `Rating must be between 1 to 5`})
         }
 
-        if(!isValid(reviewedAt)) {
-            return res.status(400).send({ status: false, message: `Review date is required`})
-        }
-
-        if(!dateRegex.test(reviewedAt)) {
-            return res.status(400).send({ status: false, message: `Review date must be "YYYY-MM-DD" in this form only And a "Valid Date"`})
-        }
-
         const newReview = await ReviewModel.create({
             bookId,
             rating,
             review,
             reviewedBy,
-            reviewedAt
+            reviewedAt: Date.now()
         });
 
         book.reviews = book.reviews + 1
