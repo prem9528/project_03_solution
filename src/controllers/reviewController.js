@@ -148,6 +148,10 @@ const updateReview = async function (req, res) {
             updatedReviewData[ '$set' ][ 'reviewedBy' ] = reviewedBy
         }
 
+                updatedReviewData[ '$set' ] = {}
+            updatedReviewData[ '$set' ][ 'reviewedAt' ] = new Date()
+        
+
         const updatedReview = await ReviewModel.findOneAndUpdate({ _id: reviewId }, updatedReviewData, { new: true })
 
         data['reviewsData'] = updatedReview

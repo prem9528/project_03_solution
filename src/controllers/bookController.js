@@ -115,7 +115,7 @@ const getAllBooks = async function (req, res) {
             }
         }
 
-        const books = await BookModel.find(filterQuery).sort({ title: 1 }).select("_id title excerpt userId category subcategory releasedAt reviews")
+        const books = await BookModel.find(filterQuery).sort({ title: 1 }).select("_id title excerpt userId category releasedAt reviews")
 
         if (Array.isArray(books) && books.length === 0) {
             return res.status(404).send({ status: false, message: 'No Books found' })
