@@ -1,16 +1,22 @@
-// const {jwt} = require('../jsonwebtoken')
+
 const jwt = require("jsonwebtoken")
 
 const authMiddleware =  (req, res, next) => {
     try {
-        const token = req.header('x-api-key')
-        console.log("token" , token)
-        if(!token) {
-            res.status(403).send({status: false, message: `Missing authentication token in request`})
-            return
+        let token = req.headers["x-Api-key"];
+        if (!token) token = req.headers["x-api-key"];
+        if (!token) {
+            return res.status(400).send({ status: false, msg: "Token required! Please login to generate token" });
         }
 
-        const decoded =  jwt.verify(token, 'someverysecuredprivatekey291@(*#*(@(@()');
+        let tokenValidity = jwt.decode(token, "bookM49");
+        let tokenTime = (tokenValidity.exp) * 1000;
+        let CreatedTime = Date.now()
+        if (CreatedTime > tokenTime) {
+            return res.status(400).send({ status: false, msg: "token is expired, login again" })
+        }
+
+        const decoded =  jwt.verify(token, 'group49project03');
 
         if(!decoded) {
             res.status(403).send({status: false, message: `Invalid authentication token in request`})
@@ -21,7 +27,6 @@ const authMiddleware =  (req, res, next) => {
 
         next()
     } catch (error) {
-        console.error(`Error0000! ${error.message}`)
         res.status(500).send({status: false, message: error.message})
     }
 }

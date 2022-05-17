@@ -128,7 +128,7 @@ const login = async function (req, res) {
             userId: user._id,
             iat: Math.floor(Date.now() / 1000),
             exp: Math.floor(Date.now() / 1000) + 60 * 60 * 60
-        }, 'someverysecuredprivatekey291@(*#*(@(@()')
+        }, 'group49project03')
 
         return res.status(200).send({status: true, message: `User login successfull`, data: {token}});
     } catch (error) {
