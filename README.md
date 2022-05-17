@@ -1,4 +1,4 @@
-# titaniumaplus
+# Uranium
 
 ## Project - Books Management
 
@@ -34,11 +34,11 @@
   userId: {ObjectId, mandatory, refs to user model},
   ISBN: {string, mandatory, unique},
   category: {string, mandatory},
-  subcategory: {string, mandatory},
+  subcategory: [string, mandatory],
   reviews: {number, default: 0, comment: Holds number of reviews of this book},
   deletedAt: {Date, when the document is deleted}, 
   isDeleted: {boolean, default: false},
-  releasedAt: {Date, mandatory},
+  releasedAt: {Date, mandatory, format("YYYY-MM-DD")},
   createdAt: {timestamp},
   updatedAt: {timestamp},
 }
@@ -52,6 +52,7 @@
   reviewedAt: {Date, mandatory},
   rating: {number, min 1, max 5, mandatory},
   review: {string, optional}
+  isDeleted: {boolean, default: false},
 }
 ```
 
@@ -119,7 +120,7 @@
 - Update the review - review, rating, reviewer's name.
 - Check if the bookId exists and is not deleted before updating the review. Check if the review exist before updating the review. Send an error response with appropirate status code like [this](#error-response-structure) if the book does not exist
 - Get review details like review, rating, reviewer's name in request body.
-- Return the updated book document with reviews data on successful operation. The response body should be in the form of JSON object like [this](#successful-response-structure)
+- Return the updated book document with reviews data on successful operation. The response body should be in the form of JSON object like [this](#book-details-response)
 
 ### DELETE /books/:bookId/review/:reviewId
 - Check if the review exist with the reviewId. Check if the book exist with the bookId. Send an error response with appropirate status code like [this](#error-response-structure) if the book or book review does not exist
@@ -134,7 +135,7 @@
 - In case of unauthorized access return an appropirate error message.
 
 ## Testing 
-- To test these apis create a new collection in Postman named Project 3 Books Management 
+- To test these apis create a new collection in Postman named Project 4 Books Management 
 - Each api should have a new request in this collection
 - Each request in the collection should be rightly named. Eg Create user, Create book, Get books etc
 - Each member of each team should have their tests in running state
@@ -175,7 +176,7 @@ Refer below sample
   address: {
     street: "110, Ridhi Sidhi Tower",
     city: "Jaipur",
-    pincode: 400001
+    pincode: "400001"
   },
   "createdAt": "2021-09-17T04:25:07.803Z",
   "updatedAt": "2021-09-17T04:25:07.803Z",
@@ -252,7 +253,7 @@ Refer below sample
     "excerpt": "book body",
     "userId": ObjectId("88abc190ef0288abc190ef02")
     "category": "Book",
-    "subcategory": "Non fiction", "Self Help"],
+    "subcategory": ["Non fiction", "Self Help"],
     "deleted": false,
     "reviews": 0,
     "deletedAt": "", // if deleted is true deletedAt will have a date 2021-09-17T04:25:07.803Z,
@@ -312,7 +313,7 @@ Refer below sample
     "deleted": false,
     "reviews": 0,
     "deletedAt": "", // if deleted is true deletedAt will have a date 2021-09-17T04:25:07.803Z,
-    "releasedAt": "2021-09-17T04:25:07.803Z"
+    "releasedAt": "2021-09-17"
     "createdAt": "2021-09-17T04:25:07.803Z",
     "updatedAt": "2021-09-17T04:25:07.803Z",
     "reviewsData": []
